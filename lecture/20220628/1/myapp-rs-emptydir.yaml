@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: myapp-rs-fortune
+spec:
+  replicas: 1      #공유가 안됨
+  selector:
+    matchLabels:
+      app: myapp-rs-fortune
+  template:
+    metadata:
+      labels:
+        app: myapp-rs-fortune
+    spec:
+      containers:   #멀티컨테이너
+      - name: web-server
+        image: nginx:alpine
+        volumeMounts:
+        - name: web-fortune        #메인
+          mountPath: /usr/share/nginx/html
+          readOnly: true
+        ports:
+        - containerPort: 80
+      - name: html-generator     #보조
+        image: ghcr.io/c1t1d0s7/fortune
+        volumeMounts:
+        - name: web-fortune
+          mountPath: /var/htdocs
+      volumes:
+      - name: web-fortune
+        emptyDir: {}
